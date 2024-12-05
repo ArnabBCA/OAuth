@@ -1,4 +1,5 @@
 import axios from "axios";
+import crypto from "crypto";
 
 export interface TokenResponse {
   access_token: string;
@@ -10,7 +11,6 @@ export interface TokenResponse {
 
 export interface OAuthClientConfig {
   clientId: string;
-  clientSecret: string;
   redirectUri: string;
   authorizationUrl: string;
   tokenUrl: string;
@@ -20,7 +20,7 @@ export interface OAuthClientConfig {
 const DEFAUlt_LAKE =
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-const generateRandomString = (len = 10, take = DEFAUlt_LAKE) => {
+const generateRandomString = (len = 128, take = DEFAUlt_LAKE) => {
   let result = "";
   for (let i = 0; i < len; i++) {
     result += take.charAt(Math.floor(Math.random() * take.length));
@@ -30,21 +30,41 @@ const generateRandomString = (len = 10, take = DEFAUlt_LAKE) => {
 
 export class OAuthClient {
   private config: OAuthClientConfig;
+  private state: string = generateRandomString(16);
 
   constructor(config: OAuthClientConfig) {
     this.config = config;
   }
 
-  private state: string = generateRandomString(16);
+  private generateCodeVerifier(): string {
+    const verifier = generateRandomString(128);
+    sessionStorage.setItem("code_verifier", verifier);
+    return verifier;
+  }
+
+  private getCodeVerifier(): string | null {
+    return sessionStorage.getItem("code_verifier");
+  }
+
+  private generateCodeChallenge(verifier: string): string {
+    const hash = crypto.createHash("sha256").update(verifier).digest("base64");
+    return hash.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
 
   public startAuthFlow(): void {
+    const codeVerifier = this.generateCodeVerifier();
+    const codeChallenge = this.generateCodeChallenge(codeVerifier);
+
     const authUrl = `${
       this.config.authorizationUrl
     }?response_type=code&client_id=${
       this.config.clientId
     }&redirect_uri=${encodeURIComponent(
       this.config.redirectUri
-    )}&scope=${this.config.scopes.join(" ")}&state=${this.state}`;
+    )}&scope=${this.config.scopes.join(" ")}&state=${
+      this.state
+    }&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+
     window.location.href = authUrl;
   }
 
@@ -55,24 +75,29 @@ export class OAuthClient {
     if (!code) {
       throw new Error("No authorization code received.");
     }
-    const tokenResponse = await this.exchangeCodeForTokens(code);
+
+    const codeVerifier = this.getCodeVerifier();
+    if (!codeVerifier) {
+      throw new Error("Code verifier is missing.");
+    }
+
+    const tokenResponse = await this.exchangeCodeForTokens(code, codeVerifier);
     return tokenResponse;
   }
 
-  private async exchangeCodeForTokens(code: string): Promise<TokenResponse> {
+  private async exchangeCodeForTokens(
+    code: string,
+    codeVerifier: string
+  ): Promise<TokenResponse> {
     try {
-      const response = await axios.post(
-        this.config.tokenUrl,
-        new URLSearchParams({
-          client_id: this.config.clientId,
-          client_secret: this.config.clientSecret,
-          code,
-          redirect_uri: this.config.redirectUri,
-          grant_type: "authorization_code",
-        })
-      );
-      const userInfo = await getUserInfo(response.data.access_token);
-      console.log("User Info:", userInfo);
+      const params = new URLSearchParams({
+        client_id: this.config.clientId,
+        code,
+        redirect_uri: this.config.redirectUri,
+        grant_type: "authorization_code",
+        code_verifier: codeVerifier,
+      });
+      const response = await axios.post(this.config.tokenUrl, params);
       return response.data;
     } catch (error: any) {
       console.error("Error exchanging code for tokens:", error);
@@ -80,80 +105,3 @@ export class OAuthClient {
     }
   }
 }
-
-const getUserInfo = async (accessToken: string) => {
-  const response = await axios.get(
-    "https://dev-ym10sclbxl8s1qf4.us.auth0.com/userinfo",
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-  return response.data;
-};
-
-/*
-
-export class OAuthClient {
-  private config: OAuthClientConfig;
-
-  constructor(config: OAuthClientConfig) {
-    this.config = config;
-  }
-
-  startAuthFlow(): string {
-    const params = new URLSearchParams({
-      response_type: "code",
-      client_id: this.config.clientId,
-      redirect_uri: this.config.redirectUri,
-      scope: this.config.scopes.join(" "),
-    });
-
-    return `${this.config.authorizationUrl}?${params.toString()}`;
-  }
-
-  async handleCallback(
-    callbackParams: Record<string, string>
-  ): Promise<TokenResponse> {
-    if (!callbackParams.code) {
-      throw new Error("Authorization code is missing");
-    }
-
-    const data = qs.stringify({
-      grant_type: "authorization_code",
-      code: callbackParams.code,
-      redirect_uri: this.config.redirectUri,
-      client_id: this.config.clientId,
-      ...(this.config.clientSecret && {
-        client_secret: this.config.clientSecret,
-      }),
-    });
-
-    const response = await axios.post(this.config.tokenUrl, data, {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
-
-    console.log("Response:", response.data);
-
-    return response.data;
-  }
-
-  async refreshToken(refreshToken: string): Promise<TokenResponse> {
-    const data = qs.stringify({
-      grant_type: "refresh_token",
-      refresh_token: refreshToken,
-      client_id: this.config.clientId,
-      ...(this.config.clientSecret && {
-        client_secret: this.config.clientSecret,
-      }),
-    });
-
-    const response = await axios.post(this.config.tokenUrl, data, {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
-
-    return response.data;
-  }
-}
-*/

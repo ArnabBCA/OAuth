@@ -7,7 +7,8 @@ import { OAuthClient } from "@/utils/oauth/oauthclient";
 const CallbackPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  let used=false;
+
+  let oauth_code_used = false;
 
   useEffect(() => {
     const code = searchParams.get("code");
@@ -18,17 +19,17 @@ const CallbackPage = () => {
       return;
     }
 
-    if (code && !used) {
+    if (code && !oauth_code_used) {
       const client = new OAuthClient({
         clientId: process.env.NEXT_PUBLIC_CLIENT_ID!,
-        clientSecret: process.env.NEXT_PUBLIC_CLIENT_SECRET!,
         redirectUri: process.env.NEXT_PUBLIC_CALLBACK_URL!,
         authorizationUrl: process.env.NEXT_PUBLIC_AUTHORIZATION_URL!,
         tokenUrl: process.env.NEXT_PUBLIC_TOKEN_URL!,
-        scopes: ["openid", "profile", "email"],
+        scopes: ["openid", "profile", "email", "offline"],
       });
-      used = true;
+
       const params = new URLSearchParams(window.location.search);
+      oauth_code_used = true;
       client
         .handleCallback(params)
         .then((tokens) => {
@@ -40,7 +41,7 @@ const CallbackPage = () => {
           console.error("Error during OAuth callback:", error);
         });
     }
-  }, []);
+  }, [searchParams, router]);
 
   return (
     <div>

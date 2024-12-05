@@ -5,11 +5,10 @@ import { OAuthClient } from "@/utils/oauth/oauthclient";
 const LoginPage = () => {
   const client = new OAuthClient({
     clientId: process.env.NEXT_PUBLIC_CLIENT_ID!,
-    clientSecret: process.env.NEXT_PUBLIC_CLIENT_SECRET!,
     redirectUri: process.env.NEXT_PUBLIC_CALLBACK_URL!,
     authorizationUrl: process.env.NEXT_PUBLIC_AUTHORIZATION_URL!,
     tokenUrl: process.env.NEXT_PUBLIC_TOKEN_URL!,
-    scopes: ["openid", "profile", "email"],
+    scopes: ["openid", "profile", "email", "offline"],
   });
 
   const handleLogin = () => {
