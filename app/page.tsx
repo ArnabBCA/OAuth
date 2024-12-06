@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const searchParams = useSearchParams();
-  const { handleCallback, logout } = useOAuthClient();
+  const { handleCallback, logout, refreshToken } = useOAuthClient();
   const [token, setToken] = useState<TokenResponse | null>(null);
   const handleAuthCallback = async () => {
     try {
@@ -27,6 +27,16 @@ export default function Home() {
     logout(oauthclientConfig);
   };
 
+  const handleRefreshToken = async () => {
+    if (token?.refresh_token) {
+      const res = await refreshToken(oauthclientConfig, token.refresh_token);
+      console.log("Refresh token response:", res);
+      setToken(res);
+    } else {
+      console.error("Refresh token is undefined");
+    }
+  };
+
   useEffect(() => {
     handleAuthCallback();
   }, []);
@@ -35,6 +45,7 @@ export default function Home() {
     <div className="w-full h-full">
       <h1>Home</h1>
       <button onClick={handleLogout}>Logout</button>
+      <button onClick={handleRefreshToken}>Refresh token</button>
     </div>
   );
 }
