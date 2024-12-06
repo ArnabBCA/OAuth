@@ -114,7 +114,7 @@ export const useOAuthClient = () => {
         grant_type: "refresh_token",
         refresh_token: refreshToken,
       });
-      const url = client.domain + "/oauth2/auth";
+      const url = client.domain + "/oauth2/token";
       const response = await axios.post(url, params, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -122,7 +122,6 @@ export const useOAuthClient = () => {
       });
 
       if (response.data && response.data.access_token) {
-        console.log(response.data);
         return response.data;
       } else {
         throw new Error("Token response is invalid or missing access_token.");
