@@ -34,7 +34,7 @@ export const useOAuthClient = () => {
         .replace(/\//g, "_")
         .replace(/=+$/, "");
 
-      const url = client.domain + "/oauth2/auth";
+      const url = client.domain + "/authorize";
 
       const authUrl = `${url}?response_type=code&client_id=${
         client.clientId
@@ -42,7 +42,9 @@ export const useOAuthClient = () => {
         client.redirectUri
       )}&scope=${client.scopes.join(
         " "
-      )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+      )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256&audience${
+        client.audience
+      }`;
 
       return authUrl;
     } catch (error) {
@@ -67,6 +69,8 @@ export const useOAuthClient = () => {
     } catch (error) {
       console.error("Error during the callback handling:", error);
       throw new Error("Error processing the callback.");
+    } finally {
+      clearUrlParams();
     }
   };
 
@@ -84,7 +88,7 @@ export const useOAuthClient = () => {
         code_verifier: codeVerifier,
       });
 
-      const url = client.domain + "/oauth2/token";
+      const url = client.domain + "/oauth/token";
       const response = await axios.post(url, params, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -99,8 +103,6 @@ export const useOAuthClient = () => {
     } catch (error) {
       console.error("Error exchanging code for tokens:", error);
       throw new Error("Error exchanging code for tokens.");
-    } finally {
-      clearUrlParams();
     }
   };
 
@@ -114,7 +116,7 @@ export const useOAuthClient = () => {
         grant_type: "refresh_token",
         refresh_token: refreshToken,
       });
-      const url = client.domain + "/oauth2/token";
+      const url = client.domain + "/oauth/token";
       const response = await axios.post(url, params, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
