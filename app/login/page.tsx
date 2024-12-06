@@ -1,24 +1,34 @@
 "use client";
-import React from "react";
-import { OAuthClient } from "@/utils/oauth/oauthclient";
+import { useRouter } from "next/navigation";
+
+import { oauthclientConfig } from "@/OAuthClientConfig";
+import { useOAuthClient } from "@/utils/oAuthClient";
 
 const LoginPage = () => {
-  const client = new OAuthClient({
-    clientId: process.env.NEXT_PUBLIC_CLIENT_ID!,
-    redirectUri: process.env.NEXT_PUBLIC_CALLBACK_URL!,
-    authorizationUrl: process.env.NEXT_PUBLIC_AUTHORIZATION_URL!,
-    tokenUrl: process.env.NEXT_PUBLIC_TOKEN_URL!,
-    scopes: ["openid", "profile", "email", "offline"],
-  });
-
+  const router = useRouter();
+  const { startAuthFlow, logout } = useOAuthClient();
   const handleLogin = () => {
-    client.startAuthFlow();
+    const authUrl = startAuthFlow(oauthclientConfig);
+    router.push(authUrl);
   };
 
   return (
     <div>
-      <h1>Login</h1>
-      <button onClick={handleLogin}>Login with OAuth</button>
+      <div>
+        <p>Click the button below to login using OAuth:</p>
+        <button onClick={handleLogin}>Login with OAuth</button>
+      </div>
+      {/*!token ? (
+        <div>
+          <p>Click the button below to login using OAuth:</p>
+          <button onClick={handleLogin}>Login with OAuth</button>
+        </div>
+      ) : (
+        <div>
+          <h2>Logged in!</h2>
+          <p>Access Token: {token.access_token}</p>
+        </div>
+      )*/}
     </div>
   );
 };
