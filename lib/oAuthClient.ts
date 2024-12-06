@@ -1,27 +1,18 @@
 import axios from "axios";
 import crypto from "crypto";
 import { OAuthClient, TokenResponse } from "./types/types";
-
-const generateRandomString = (
-  len = 128,
-  chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-): string => {
-  let result = "";
-  for (let i = 0; i < len; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
-
-const clearUrlParams = () => {
-  const url = new URL(window.location.toString());
-  url.search = "";
-  window.history.pushState({}, "", url);
-};
+import {
+  authFlowInit,
+  clearUrlParams,
+  generateRandomString,
+  removeAuthFlowInit,
+  resetUrlandLocalStorage,
+} from "./utils/utils";
 
 export const useOAuthClient = () => {
   const startAuthFlow = (client: OAuthClient): string => {
     try {
+      authFlowInit();
       const state = generateRandomString(16);
       const codeVerifier = generateRandomString(128);
       sessionStorage.setItem("code_verifier", codeVerifier);
@@ -71,6 +62,7 @@ export const useOAuthClient = () => {
       throw new Error("Error processing the callback.");
     } finally {
       clearUrlParams();
+      removeAuthFlowInit();
     }
   };
 
@@ -128,8 +120,14 @@ export const useOAuthClient = () => {
       } else {
         throw new Error("Token response is invalid or missing access_token.");
       }
-    } catch (error) {
-      console.error("Error refreshing token:", error);
+    } catch (error: any) {
+      if (error.status === 401 || error.status === 403) {
+        console.log(
+          "Token expired. Redirecting to login page...",
+          client.logoutUri
+        );
+        resetUrlandLocalStorage(client.logoutUri);
+      }
       throw new Error("Error refreshing token.");
     }
   };
@@ -137,6 +135,7 @@ export const useOAuthClient = () => {
   const logout = async (client: OAuthClient) => {
     try {
       const url = client.domain + `/logout?redirect=${client.logoutUri}`;
+      localStorage.clear();
       window.location.href = url.toString();
       console.log("Logingout...");
     } catch (error) {
@@ -145,5 +144,19 @@ export const useOAuthClient = () => {
     }
   };
 
-  return { startAuthFlow, handleCallback, refreshToken, logout };
+  const getUserInfo = async (client: OAuthClient, access_token: string) => {
+    try {
+      const url = client.domain + "/userinfo";
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting user info:", error);
+      throw new Error("Error getting user info.");
+    }
+  };
+  return { startAuthFlow, handleCallback, refreshToken, logout, getUserInfo };
 };

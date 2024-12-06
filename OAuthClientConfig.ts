@@ -1,4 +1,4 @@
-import { OAuthClient } from "./utils/types/types";
+import { OAuthClient } from "./lib/types/types";
 
 export const oauthclientConfig: OAuthClient = {
   domain: process.env.NEXT_PUBLIC_DOMAIN!,
@@ -7,5 +7,5 @@ export const oauthclientConfig: OAuthClient = {
   redirectUri: process.env.NEXT_PUBLIC_CALLBACK_URL!,
   logoutUri: process.env.NEXT_PUBLIC_LOGOUT_URL!,
 
-  scopes: ["openid", "profile", "email", "offline"],
+  scopes: ["openid", "profile", "email", "offline_access"],
 };

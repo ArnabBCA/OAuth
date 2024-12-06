@@ -1,15 +1,23 @@
 "use client";
 
 import { oauthclientConfig } from "@/OAuthClientConfig";
-import { useOAuthClient } from "@/utils/oAuthClient";
-import { TokenResponse } from "@/utils/types/types";
+import useAuth from "@/lib/context/authContextProvider";
+import { useOAuthClient } from "@/lib/oAuthClient";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function Home() {
   const searchParams = useSearchParams();
   const { handleCallback, logout, refreshToken } = useOAuthClient();
-  const [token, setToken] = useState<TokenResponse>();
+  const {
+    accessToken,
+    setAccessToken,
+    refreshToken: authRefreshToken,
+    setRefreshToken,
+    authUserInfo,
+    initializeAuth,
+  } = useAuth();
+
   const isCallbackHandled = useRef(false);
 
   const handleAuthCallback = async () => {
@@ -19,7 +27,8 @@ export default function Home() {
         const res = await handleCallback(oauthclientConfig, searchParams);
         if (res) {
           console.log("Token response:", res);
-          setToken(res);
+          setAccessToken(res.access_token);
+          setRefreshToken(res.refresh_token);
         }
       } catch (error) {
         console.error("Error handling callback:", error);
@@ -32,34 +41,38 @@ export default function Home() {
   };
 
   const handleRefreshToken = async () => {
-    console.log("Refreshing token...", token);
     try {
-      if (token && token.refresh_token) {
-        const res = await refreshToken(oauthclientConfig, token.refresh_token);
-        console.log("Refresh token response:", res);
-        setToken(res);
-      } else {
-        console.error("Refresh token is undefined", token);
-      }
+      const res = await refreshToken(oauthclientConfig, authRefreshToken);
+      console.log("Refresh token response:", res);
+      setAccessToken(res.access_token);
+      setRefreshToken(res.refresh_token);
     } catch (error) {
       console.error("Error refreshing token:", error);
     }
+  };
+
+  const showTokens = () => {
+    console.log("Access token:", accessToken);
+    console.log("Refresh token:", authRefreshToken);
+    console.log("User info:", authUserInfo);
   };
 
   useEffect(() => {
     handleAuthCallback();
   }, []);
 
+  useEffect(() => {
+    showTokens();
+  }, [authUserInfo]);
+
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full flex flex-col">
       <h1>Home</h1>
       <button onClick={handleLogout}>Logout</button>
       <button type="button" onClick={handleRefreshToken}>
         Refresh token
       </button>
-      <button onClick={() => console.log("Current Token:", token)}>
-        Show State
-      </button>
+      <button onClick={showTokens}>Show Tokens and User details</button>
     </div>
   );
 }

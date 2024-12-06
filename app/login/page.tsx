@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 
 import { oauthclientConfig } from "@/OAuthClientConfig";
-import { useOAuthClient } from "@/utils/oAuthClient";
+import { useOAuthClient } from "@/lib/oAuthClient";
 
 const LoginPage = () => {
   const router = useRouter();
