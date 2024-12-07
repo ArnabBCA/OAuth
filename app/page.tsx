@@ -73,6 +73,10 @@ export default function Home() {
         Refresh token
       </button>
       <button onClick={showTokens}>Show Tokens and User details</button>
+      <div>
+        <h1>User Info</h1>
+        <pre>{JSON.stringify(authUserInfo, null, 2)}</pre>
+      </div>
     </div>
   );
 }

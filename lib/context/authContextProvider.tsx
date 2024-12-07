@@ -10,6 +10,8 @@ import {
 import { useOAuthClient } from "../oAuthClient";
 import { oauthclientConfig } from "@/OAuthClientConfig";
 import { isAuthFlowInit, resetUrlandLocalStorage } from "../utils/utils";
+import { useRouter } from "next/navigation";
+import ProtectedRoute from "../hooks/useProtectedRoute";
 
 interface AuthContextType {
   authLoaded: boolean;
@@ -20,15 +22,20 @@ interface AuthContextType {
   setRefreshToken: (token: string) => void;
   authUserInfo: any;
   initializeAuth: () => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
   const { getUserInfo, refreshToken } = useOAuthClient();
   const [accessToken, setAccessToken] = useState<string>("");
   const [authUserInfo, setAuthUserInfo] = useState<any>({});
   const [authLoaded, setAuthLoaded] = useState<boolean>(false);
+
+  const [loading, setLoading] = useState(true);
 
   const updateRefreshToken = async (token: string) => {
     localStorage.setItem("refreshToken", token);
@@ -42,16 +49,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const initializeAuth = async () => {
-    if (isAuthFlowInit()) return;
     const storedRefreshToken = getRefreshTokenFromLocalStorage();
     if (!storedRefreshToken) {
-      resetUrlandLocalStorage(oauthclientConfig.logoutUri);
+      setLoading(false);
+      //resetUrlandLocalStorage(oauthclientConfig.logoutUri);
       return;
     }
+    setLoading(false);
     try {
       const res = await refreshToken(oauthclientConfig, storedRefreshToken);
       await updateAccessToken(res.access_token);
       await updateRefreshToken(res.refresh_token);
+      router.push("/");
     } catch (error: any) {
       console.error("Failed to refresh access token:", error);
     }
@@ -65,6 +74,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     } catch (error) {
       console.error("Error getting user info:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,9 +102,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         refreshToken: getRefreshTokenFromLocalStorage(),
         setRefreshToken: updateRefreshToken,
         authUserInfo,
+        loading,
+        setLoading,
       }}
     >
-      {children}
+      <ProtectedRoute>{children}</ProtectedRoute>
     </AuthContext.Provider>
   );
 };
