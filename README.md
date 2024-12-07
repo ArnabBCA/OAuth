@@ -40,9 +40,16 @@ NEXT_PUBLIC_AUDIENCE_TARGET_API=(yourkey)
 
 ### Scroll below and toggle the `Allow Offline Access` and then CLick `Save`
 
-
-
 ![alt text](image-3.png)
+
+### Move to Applications then click the button `Create Application`
+
+
+![alt text](image-4.png)
+
+### In the Dialog select `Single Page Applications`
+
+![alt text](image-5.png)
 <br />
 
 ```bash
