@@ -32,9 +32,17 @@ Step 6 :
 ### On the `Identifier` type the following `https://demo.com/api` you can adjust the nameing if you want but it should start with `https://`
 ### Keep all the other fields to default values
 ![alt text](image-1.png)
-### Then Open the API you just created
-And `COPY` the Identifier which you created earlier and put inside the .local.env
+### Then Open the API you just created And `COPY` the `Identifier` which you created earlier and put inside the `.local.env` as given below below
+```bash
+NEXT_PUBLIC_AUDIENCE_TARGET_API=(yourkey)
+```
 ![alt text](image-2.png)
+
+### Scroll below and toggle the `Allow Offline Access` and then CLick `Save`
+
+
+
+![alt text](image-3.png)
 <br />
 
 ```bash
