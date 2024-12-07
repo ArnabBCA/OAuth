@@ -47,18 +47,35 @@ NEXT_PUBLIC_AUDIENCE_TARGET_API=(yourkey)
 
 ![alt text](image-4.png)
 
-### In the Dialog select `Single Page Applications`
+### In the Dialog select `Single Page Applications` then click the `Create` button.
 
 ![alt text](image-5.png)
+
+### Open the Created Application and copy the `Domain`, `Client ID`, ans paste in the `.env.local`
+
+```bash
+NEXT_PUBLIC_DOMAIN=(yourkey)
+NEXT_PUBLIC_CLIENT_ID=(yourkey)
+```
+
+
+![alt text](image-6.png)
+
+### Then as shown in the pictures given below scroll and input the following in their respective fields `Allowed Callback URLs`, `Allowed Logout URLs`, `Allowed Web Origins`
+![alt text](image-7.png)
+![alt text](image-9.png)
+
 <br />
+
+### Your final `.env.local` should look like this paste this file in the root project folder.
 
 ```bash
 NEXT_PUBLIC_DOMAIN=(yourkey)
 NEXT_PUBLIC_CLIENT_ID=(yourkey)
 NEXT_PUBLIC_AUDIENCE_TARGET_API=(yourkey)
 
-NEXT_PUBLIC_CALLBACK_URL=h(yourkey)
-NEXT_PUBLIC_LOGOUT_URL=(yourkey)
+NEXT_PUBLIC_CALLBACK_URL=http://localhost:3000
+NEXT_PUBLIC_LOGOUT_URL=http://localhost:3000/login
 ```
 
 Step 4: Start the development server
