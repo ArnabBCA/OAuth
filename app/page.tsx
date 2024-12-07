@@ -16,7 +16,6 @@ export default function Home() {
     refreshToken: authRefreshToken,
     setRefreshToken,
     authUserInfo,
-    initializeAuth,
   } = useAuth();
 
   const isCallbackHandled = useRef(false);
@@ -86,7 +85,7 @@ export default function Home() {
           Show State
         </button>
       </div>
-      {Object.keys(authUserInfo).length > 0 && (
+      {authUserInfo && (
         <div className="rounded-lg border bg-card shadow-sm p-4">
           <h1>User Info</h1>
           <Image

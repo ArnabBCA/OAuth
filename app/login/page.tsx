@@ -13,22 +13,16 @@ const LoginPage = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col items-center w-full h-screen justify-center gap-4">
+      <h1 className="text-md font-semibold">Login Page</h1>
       <div>
-        <p>Click the button below to login using OAuth:</p>
-        <button onClick={handleLogin}>Login with OAuth</button>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+          onClick={handleLogin}
+        >
+          Login with OAuth
+        </button>
       </div>
-      {/*!token ? (
-        <div>
-          <p>Click the button below to login using OAuth:</p>
-          <button onClick={handleLogin}>Login with OAuth</button>
-        </div>
-      ) : (
-        <div>
-          <h2>Logged in!</h2>
-          <p>Access Token: {token.access_token}</p>
-        </div>
-      )*/}
     </div>
   );
 };

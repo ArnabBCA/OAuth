@@ -1,3 +1,5 @@
+import { OAuthClient } from "../types/types";
+
 export const generateRandomString = (
   len = 128,
   chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -32,3 +34,10 @@ export const removeAuthFlowInit = () => {
 export const isAuthFlowInit = () => {
   return localStorage.getItem("isAuthFlowInit") === "true";
 };
+
+/*export const handleCallbackRedirect = (client: OAuthClient) => {
+  if (window.location.href !== client.redirectUri + "/") {
+    window.location.href = client.redirectUri;
+  }
+  //window.location.href = client.redirectUri;
+};*/

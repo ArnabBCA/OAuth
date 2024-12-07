@@ -14,16 +14,12 @@ import { useRouter } from "next/navigation";
 import ProtectedRoute from "../hooks/useProtectedRoute";
 
 interface AuthContextType {
-  authLoaded: boolean;
-  setAuthLoaded: (loaded: boolean) => void;
   accessToken: string;
   refreshToken: string;
   setAccessToken: (token: string) => void;
   setRefreshToken: (token: string) => void;
   authUserInfo: any;
-  initializeAuth: () => void;
   loading: boolean;
-  setLoading: (loading: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,8 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const { getUserInfo, refreshToken } = useOAuthClient();
   const [accessToken, setAccessToken] = useState<string>("");
-  const [authUserInfo, setAuthUserInfo] = useState<any>({});
-  const [authLoaded, setAuthLoaded] = useState<boolean>(false);
+  const [authUserInfo, setAuthUserInfo] = useState<any>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -55,7 +50,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       //resetUrlandLocalStorage(oauthclientConfig.logoutUri);
       return;
     }
-    setLoading(false);
     try {
       const res = await refreshToken(oauthclientConfig, storedRefreshToken);
       await updateAccessToken(res.access_token);
@@ -94,16 +88,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider
       value={{
-        authLoaded,
-        setAuthLoaded,
-        initializeAuth,
         accessToken,
         setAccessToken: updateAccessToken,
         refreshToken: getRefreshTokenFromLocalStorage(),
         setRefreshToken: updateRefreshToken,
         authUserInfo,
         loading,
-        setLoading,
       }}
     >
       <ProtectedRoute>{children}</ProtectedRoute>

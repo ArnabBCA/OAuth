@@ -7,12 +7,12 @@ import useAuth from "../context/authContextProvider";
 import { ReactNode } from "react";
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { authUserInfo, loading, refreshToken } = useAuth();
+  const { loading, refreshToken } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!refreshToken) {
-      router.push("/login"); // Redirect to login page
+      router.push("/login");
     }
   }, [loading, router]);
 
@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     return <div>Loading...</div>;
   }
 
-  return authUserInfo ? children : null;
+  return children;
 };
 
 export default ProtectedRoute;
