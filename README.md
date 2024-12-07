@@ -1,36 +1,54 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+## To test the library
 
-First, run the development server:
+Step 1: First, clone the repo
 
 ```bash
+git clone https://github.com/ArnabBCA/OAuth.git
+```
+
+Step 2: Install Dependencies
+
+```bash
+npm install
+```
+
+Step 3: Follow the steps below to get your .env.local variables.
+
+Step 4 : Visit AuthO by Okta and create a account
+
+```bash
+https://auth0.com/
+```
+
+Step 5 : On the left handside on the dashboard page click Application then APIs then click `CREATE API`
+
+![alt text](image.png)
+
+Step 6 :
+### One the `Name` field give any name of your choice 
+
+### On the `Identifier` type the following `https://demo.com/api` you can adjust the nameing if you want but it should start with `https://`
+### Keep all the other fields to default values
+![alt text](image-1.png)
+### Then Open the API you just created
+And `COPY` the Identifier which you created earlier and put inside the .local.env
+![alt text](image-2.png)
+<br />
+
+```bash
+NEXT_PUBLIC_DOMAIN=(yourkey)
+NEXT_PUBLIC_CLIENT_ID=(yourkey)
+NEXT_PUBLIC_AUDIENCE_TARGET_API=(yourkey)
+
+NEXT_PUBLIC_CALLBACK_URL=h(yourkey)
+NEXT_PUBLIC_LOGOUT_URL=(yourkey)
+```
+
+Step 4: Start the development server
+```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
