@@ -134,7 +134,7 @@ export const useOAuthClient = () => {
 
   const logout = async (client: OAuthClient) => {
     try {
-      const url = client.domain + `/logout?redirect=${client.logoutUri}`;
+      const url = client.domain + `/v2/logout?client_id=${client.clientId}`;
       localStorage.clear();
       window.location.href = url.toString();
       console.log("Logingout...");
