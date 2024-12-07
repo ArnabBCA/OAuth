@@ -5,6 +5,7 @@ import useAuth from "@/lib/context/authContextProvider";
 import { useOAuthClient } from "@/lib/oAuthClient";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -66,17 +67,44 @@ export default function Home() {
   }, [authUserInfo]);
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <h1>Home</h1>
-      <button onClick={handleLogout}>Logout</button>
-      <button type="button" onClick={handleRefreshToken}>
-        Refresh token
-      </button>
-      <button onClick={showTokens}>Show Tokens and User details</button>
-      <div>
-        <h1>User Info</h1>
-        <pre>{JSON.stringify(authUserInfo, null, 2)}</pre>
+    <div className="w-full flex flex-col items-center justify-center gap-4">
+      <h1 className="text-md font-semibold">Home</h1>
+      <div className="flex gap-4">
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+          onClick={handleRefreshToken}
+        >
+          Refresh token
+        </button>
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+          Show State
+        </button>
       </div>
+      {Object.keys(authUserInfo).length > 0 && (
+        <div className="rounded-lg border bg-card shadow-sm p-4">
+          <h1>User Info</h1>
+          <Image
+            src={authUserInfo.picture}
+            alt="User Image"
+            width={100}
+            height={100}
+            className="rounded-full"
+          />
+          <div className="w-full">
+            {Object.keys(authUserInfo).map((key) => (
+              <div key={key}>
+                <span>{key + ": " + authUserInfo[key]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
