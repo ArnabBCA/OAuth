@@ -6,8 +6,10 @@ import { useOAuthClient } from "@/lib/oAuthClient";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { handleCallback, logout, refreshToken } = useOAuthClient();
   const {
@@ -29,6 +31,7 @@ export default function Home() {
           console.log("Token response:", res);
           setAccessToken(res.access_token);
           setRefreshToken(res.refresh_token);
+          router.push("/");
         }
       } catch (error) {
         console.error("Error handling callback:", error);
@@ -43,7 +46,6 @@ export default function Home() {
   const handleRefreshToken = async () => {
     try {
       const res = await refreshToken(oauthclientConfig, authRefreshToken);
-      console.log("Refresh token response:", res);
       setAccessToken(res.access_token);
       setRefreshToken(res.refresh_token);
     } catch (error) {
@@ -81,8 +83,11 @@ export default function Home() {
         >
           Refresh token
         </button>
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-          Show State
+        <button
+          onClick={showTokens}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+        >
+          Show Current State
         </button>
       </div>
       {authUserInfo && (
