@@ -25,7 +25,7 @@ const newTokens = refreshToken(authClientConfig, refreshToken);
 const userInfo = getUserInfo(oauthclientConfig, accesshToken);
 
 // Returns the Logout URL which is used to logout the current user.
-logoutUrl = logout(authClientConfig);
+const logoutUrl = logout(authClientConfig);
 ```
 
 ### Next.js Usuage
