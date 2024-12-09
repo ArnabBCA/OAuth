@@ -1,84 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# A Next.js OAuth 2.0 library
 
-## [Documentation](./USE_LIBRARY.md) on how to use the library.
+## This library uses the AuthO by Okta API. The Libary can be used in both Client and Server side Authentication This library Uses PKCE, or Proof Key for Code Exchange protocol by OAuth 2.0.
 
-## To Setup the demo Project
 
-#### Step 1: First, clone the repo
+### To Setup the demo Project follow this [SETUP GUIDE](./SETUP.md)
 
-```bash
-git clone https://github.com/ArnabBCA/OAuth.git
+
+### The library Exports the following methods
+```js
+import { useOAuthClient } from "@/lib/oAuthClient";
+
+const {startAuthFlow, handleCallback, refreshToken, userInfo, logout} = useOAuthClient();
+
+// Returns the authorization URl, state and codeVerifier (The state and codeVerifier is used in the server side to set cookies)
+const { authUrl, state, codeVerifier } = startAuthFlow(authClientConfig);
+
+// Returns the Access and Refresh tokens (The storedState, toredVerifier are optional parameters these are passed during server side auth
+const tokens = handleCallback(authClientConfig, callbackParams , storedState?, toredVerifier?);
+
+// Returns new access and refresh token
+const newTokens = refreshToken(authClientConfig, refreshToken);
+
+// Returns the loggedin user info e.g. Name, Email etc
+const userInfo = getUserInfo(oauthclientConfig, accesshToken);
+
+// Returns the Logout URL which is used to logout the current user.
+logoutUrl = logout(authClientConfig);
 ```
 
-#### Step 2: Install Dependencies
+### Next.js Usuage
 
-```bash
-npm install
-```
-
-#### Step 4 : Visit AuthO by Okta and create a account
-
-```bash
-https://auth0.com/
-```
-
-#### Step 5: Follow the steps below to get your .env.local variables.
-
-#### Step 6 : On the left handside on the dashboard page click Application then APIs then click `CREATE API`
-
-![image](https://github.com/user-attachments/assets/e70be251-841e-4ab9-a3c5-f97f85ac0575)
-
-
-#### Step 7 : One the `Name` field give any name of your choice. <br/> On the `Identifier` type the following `https://demo.com/api` you can adjust the nameing if you want but it should start with `https://` <br/> Keep all the other fields to default values.
-
-![image-1](https://github.com/user-attachments/assets/f065f01f-6c3f-4f18-bb21-6506039b6610)
-
-
-#### Step 8 :Then Open the API you just created And `COPY` the `Identifier` which you created earlier and put inside the `.local.env` as given below below
-
-```bash
-NEXT_PUBLIC_AUDIENCE_TARGET_API=(yourkey)
-```
-
-![image-2](https://github.com/user-attachments/assets/6394a405-40ee-42aa-af4e-692c6e4faee4)
-
-
-#### Step 9 :Scroll below and toggle the `Allow Offline Access` and then CLick `Save`
-
-![image-3](https://github.com/user-attachments/assets/5b3b00d9-e0be-4c8a-a3cd-cecbd4d34eb5)
-
-
-#### Step 10 : Move to Applications then click the button `Create Application`
-
-![image-4](https://github.com/user-attachments/assets/4d56fd3e-c03c-44f2-83bd-568231e1ae89)
-
-
-#### Step 11 : In the Dialog select `Single Page Applications` then click the `Create` button.
-
-![image-5](https://github.com/user-attachments/assets/7b61dfc0-a323-42a3-99ee-a7b1764f2c24)
-
-
-#### Step 12 : Open the Created Application and copy the `Domain`, `Client ID`, ans paste in the `.env.local`
-
-```bash
-NEXT_PUBLIC_DOMAIN=(yourkey)
-NEXT_PUBLIC_CLIENT_ID=(yourkey)
-```
-
-![image-6](https://github.com/user-attachments/assets/64420cca-c1be-4188-90d6-3db4c48085c3)
-
-
-#### Step 13 : Then as shown in the pictures given below scroll and input the following in their respective fields `Allowed Callback URLs`, `Allowed Logout URLs`, `Allowed Web Origins`. Keep rest of the field to default values. The First Callback URL ` http://localhost:3000 ` is used when we only want `Client` Side Authentication, and the second one `http://localhost:3000/api/auth/callback` is for `Server` side authentication
-
-
-![image](https://github.com/user-attachments/assets/2c24d42c-8c8c-4da6-9b2c-28c0bf75b3e0)
-
-![image-9](https://github.com/user-attachments/assets/493b5d18-ef19-49a1-bd94-3984bbf52465)
-
-
-<br />
-
-#### Step 14 : Your final `.env.local` should look like this paste this file in the root project folder.
+#### Before Proceding make sure you have the following `.env.local` variables and placed in the root folder
 
 ```bash
 NEXT_PUBLIC_DOMAIN=(yourkey)
@@ -89,29 +41,75 @@ NEXT_PUBLIC_CALLBACK_URL=http://localhost:3000 (For client side auth) or http://
 NEXT_PUBLIC_LOGOUT_URL=http://localhost:3000/login
 ```
 
-#### Step 4: Start the development server
+### To use the library in the Client side
 
-```bash
-npm run dev
+#### Step 1 : Make sure your `.env.local` matches and rest of the .env.local variables
+
+```
+NEXT_PUBLIC_CALLBACK_URL=http://localhost:3000
 ```
 
-#### Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Step 2 The library exports a AuthProvider which you have to wrap it in the root layout.tsx file
 
-### Adding more social providers (Optional)
+```js
+import { AuthProvider } from "@/lib/context/authContext";
+/**
+ * Other imports
+ * Root layout component.
+ */
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode,
+}>) {
+  return (
+    <html lang="en">
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
+    </html>
+  );
+}
+```
 
-#### Step 1: Go to the `Authentication` tab then to `Social` then click `Create Connection`
+#### Step 3: The `authContextProvider` exports the following methods
+```js
+import { useAuth } from "@/lib/context/authContext";
 
-![image-10](https://github.com/user-attachments/assets/58ad5660-1906-4e6d-a1a7-53420d1ac570)
+const {
+    login, // Funtion to start the startAuthFlow()
+    logout, // Funtion to logout the user()
+    user, // returns the loggedin user info
+    loading, // returns a boolean value which indicated the loading state of the user 
+} = useAuth();
+```
 
+### To use the library in the server side follow the previous steps.
 
-#### Step 2: Choose a Social Connection for example `GitHub` then open it then click `Continue. On the dialog box click `Create` leave every thing to default values
+#### Step 1 : Make sure your `.env.local` matches and rest of the .env.local variables
+```
+NEXT_PUBLIC_CALLBACK_URL=http://localhost:3000/api/auth/callback
+```
 
-![image-11](https://github.com/user-attachments/assets/61074236-a87d-4272-a5b8-d903bdbcade8)
+#### Step 2: Create a route.ts file in this directory `app\api\auth\[authO]\route.ts` and import the `handleAuth()` like bellow
 
-![image-12](https://github.com/user-attachments/assets/bf0a01e6-b478-4496-8fcb-ceaaf0a3cb68)
+```js
+import { handleAuth } from "@/lib/server/handleAuth";
 
+export const GET = handleAuth();
+```
+##### This will automatically create these routes
+```
+/api/auth/callback
+/api/auth/login
+/api/auth/logout
+/api/auth/me
+```
 
-#### Step-3: Toggle the Applications ( `API` and `Single Page Application`) we created Earlier.<Br> Below is a Eample: The the names of the applications will be different in your case
+#### Step 3 : Add the `useServerSide` flag in the AuthProvider
+```js
+<AuthProvider useServerSide>{children}</AuthProvider>
+```
+##### This will disable client side functionality and switch to server side, for example the login() function which we were previously using in the client side will now be used to initiate the login process in the server side `/api/auth/login`
 
-![image-13](https://github.com/user-attachments/assets/33f71129-3641-4efa-af56-3e413bade6f1)
 
