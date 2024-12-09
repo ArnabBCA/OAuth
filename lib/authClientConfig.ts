@@ -1,6 +1,6 @@
-import { OAuthClient } from "./lib/types/types";
+import { OAuthClient } from "./types/types";
 
-export const oauthclientConfig: OAuthClient = {
+export const authClientConfig: OAuthClient = {
   domain: process.env.NEXT_PUBLIC_DOMAIN!,
   clientId: process.env.NEXT_PUBLIC_CLIENT_ID!,
   audience: process.env.NEXT_PUBLIC_AUDIENCE_TARGET_API!,

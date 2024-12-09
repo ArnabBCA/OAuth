@@ -1,4 +1,4 @@
-import { OAuthClient } from "../types/types";
+export const isClientSide = (): boolean => typeof window !== "undefined";
 
 export const generateRandomString = (
   len = 128,
@@ -17,27 +17,14 @@ export const clearUrlParams = () => {
   window.history.pushState({}, "", url);
 };
 
-export const resetUrlandLocalStorage = (logoutUri: string) => {
-  localStorage.removeItem("refreshToken");
-  if (window.location.href === logoutUri) return;
-  window.location.href = logoutUri;
+export const setRefreshToken = (tokens: string) => {
+  localStorage.setItem("refresh_token", tokens);
 };
 
-export const authFlowInit = () => {
-  localStorage.setItem("isAuthFlowInit", "true");
+export const getRefreshToken = () => {
+  return localStorage.getItem("refresh_token");
 };
 
-export const removeAuthFlowInit = () => {
-  localStorage.removeItem("isAuthFlowInit");
+export const clearRefreshToken = () => {
+  localStorage.removeItem("refresh_token");
 };
-
-export const isAuthFlowInit = () => {
-  return localStorage.getItem("isAuthFlowInit") === "true";
-};
-
-/*export const handleCallbackRedirect = (client: OAuthClient) => {
-  if (window.location.href !== client.redirectUri + "/") {
-    window.location.href = client.redirectUri;
-  }
-  //window.location.href = client.redirectUri;
-};*/

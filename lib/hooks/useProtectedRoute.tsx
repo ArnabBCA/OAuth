@@ -2,9 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import useAuth from "../context/authContextProvider";
-
 import { ReactNode } from "react";
+import { useAuth } from "../context/authContext";
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { loading, refreshToken } = useAuth();

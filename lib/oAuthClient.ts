@@ -1,22 +1,13 @@
 import axios from "axios";
 import crypto from "crypto";
 import { OAuthClient, TokenResponse } from "./types/types";
-import {
-  authFlowInit,
-  clearUrlParams,
-  generateRandomString,
-  removeAuthFlowInit,
-  resetUrlandLocalStorage,
-} from "./utils/utils";
+import { generateRandomString, isClientSide } from "./utils/utils";
 
 export const useOAuthClient = () => {
-  const startAuthFlow = (client: OAuthClient): string => {
+  const startAuthFlow = (client: OAuthClient) => {
     try {
-      authFlowInit();
       const state = generateRandomString(16);
       const codeVerifier = generateRandomString(128);
-      sessionStorage.setItem("code_verifier", codeVerifier);
-
       const codeChallenge = crypto
         .createHash("sha256")
         .update(codeVerifier)
@@ -25,19 +16,23 @@ export const useOAuthClient = () => {
         .replace(/\//g, "_")
         .replace(/=+$/, "");
 
-      const url = client.domain + "/authorize";
-
-      const authUrl = `${url}?response_type=code&client_id=${
-        client.clientId
-      }&redirect_uri=${encodeURIComponent(
-        client.redirectUri
-      )}&scope=${client.scopes.join(
-        " "
-      )}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256&audience${
-        client.audience
-      }`;
-
-      return authUrl;
+      const url = `${client.domain}/authorize`;
+      const params = new URLSearchParams({
+        response_type: "code",
+        client_id: client.clientId,
+        redirect_uri: client.redirectUri,
+        scope: client.scopes.join(" "),
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: "S256",
+        audience: client.audience,
+      });
+      const authUrl = `${url}?${params.toString()}`;
+      if (isClientSide()) {
+        sessionStorage.setItem("oauth_state", state);
+        sessionStorage.setItem("code_verifier", codeVerifier);
+      }
+      return { authUrl, state, codeVerifier };
     } catch (error) {
       console.error("Error starting the authentication flow:", error);
       throw new Error("Unable to start the OAuth authorization flow.");
@@ -46,23 +41,41 @@ export const useOAuthClient = () => {
 
   const handleCallback = async (
     client: OAuthClient,
-    callbackParams: URLSearchParams
+    callbackParams: URLSearchParams,
+    storedState?: string,
+    storedVerifier?: string
   ): Promise<TokenResponse | null> => {
     try {
       const code = callbackParams.get("code");
-      if (!code) return null;
-      const codeVerifier = sessionStorage.getItem("code_verifier");
-      if (!codeVerifier) {
-        console.error("Code verifier is missing in session storage.");
-        throw new Error("Code verifier is missing.");
+      const returnedState = callbackParams.get("state");
+
+      if (!code) {
+        return null;
       }
-      return await exchangeCodeForTokens(client, code, codeVerifier);
+
+      let codeVerifier: string | null;
+      let state: string | null;
+
+      if (isClientSide()) {
+        codeVerifier = sessionStorage.getItem("code_verifier") || null;
+        state = sessionStorage.getItem("oauth_state") || null;
+      } else {
+        codeVerifier = storedVerifier || null;
+        state = storedState || null;
+      }
+
+      if (!codeVerifier || !state) {
+        throw new Error("Missing code verifier or state.");
+      }
+      if (state !== returnedState) {
+        throw new Error("State mismatch! Potential CSRF attack.");
+      }
+
+      const tokens = await exchangeCodeForTokens(client, code, codeVerifier);
+      return tokens;
     } catch (error) {
       console.error("Error during the callback handling:", error);
       throw new Error("Error processing the callback.");
-    } finally {
-      clearUrlParams();
-      removeAuthFlowInit();
     }
   };
 
@@ -122,22 +135,20 @@ export const useOAuthClient = () => {
       }
     } catch (error: any) {
       if (error.status === 401 || error.status === 403) {
-        console.log(
-          "Token expired. Redirecting to login page...",
-          client.logoutUri
-        );
-        resetUrlandLocalStorage(client.logoutUri);
+        console.log("Token expired. Redirecting to login page...");
       }
       throw new Error("Error refreshing token.");
     }
   };
 
-  const logout = async (client: OAuthClient) => {
+  const logout = (client: OAuthClient) => {
     try {
-      const url = client.domain + `/v2/logout?client_id=${client.clientId}`;
-      localStorage.clear();
-      window.location.href = url.toString();
-      console.log("Logingout...");
+      const params = new URLSearchParams({
+        client_id: client.clientId,
+        returnTo: client.logoutUri,
+      });
+      const logoutUrl = `${client.domain}/v2/logout?${params.toString()}`;
+      return logoutUrl;
     } catch (error) {
       console.error("Error logging out:", error);
       throw new Error("Error logging out.");
@@ -153,7 +164,7 @@ export const useOAuthClient = () => {
         },
       });
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting user info:", error);
       throw new Error("Error getting user info.");
     }

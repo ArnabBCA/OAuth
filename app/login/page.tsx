@@ -1,30 +1,20 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/context/authContext";
 
-import { oauthclientConfig } from "@/OAuthClientConfig";
-import { useOAuthClient } from "@/lib/oAuthClient";
-
-const LoginPage = () => {
-  const router = useRouter();
-  const { startAuthFlow, logout } = useOAuthClient();
-  const handleLogin = () => {
-    const authUrl = startAuthFlow(oauthclientConfig);
-    router.push(authUrl);
-  };
+export default function LoginPage() {
+  const { login } = useAuth();
 
   return (
-    <div className="flex flex-col items-center w-full h-screen justify-center gap-4">
-      <h1 className="text-md font-semibold">Login Page</h1>
-      <div>
+    <div className="w-full flex flex-col items-center justify-center gap-4">
+      <h1 className="text-md font-semibold">Login</h1>
+      <div className="flex gap-4">
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-          onClick={handleLogin}
+          onClick={login}
         >
-          Login with OAuth
+          Login
         </button>
       </div>
     </div>
   );
-};
-
-export default LoginPage;
+}
