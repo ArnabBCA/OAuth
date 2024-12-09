@@ -1,6 +1,6 @@
 # A Next.js OAuth 2.0 library
 
-## This library uses the AuthO by Okta Authentication API. The Libary can be used in both Client and Server side Authentication This library Uses PKCE, or Proof Key for Code Exchange protocol by OAuth 2.0.
+## This library uses the AuthO by Okta Authentication API. The Libary can be used in both Client and Server side Authentication. This library Uses PKCE, or Proof Key for Code Exchange protocol by OAuth 2.0.
 
 
 ### To Setup the demo Project follow this [SETUP GUIDE](./SETUP.md)
