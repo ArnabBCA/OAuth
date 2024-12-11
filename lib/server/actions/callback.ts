@@ -48,7 +48,7 @@ export async function CallbackWithRedirect(
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      //expires: new Date(Date.now() + tokens.expires_in * 1000),
+      expires: new Date(Date.now() + tokens.expires_in * 1000),
     });
 
     return NextResponse.redirect(req.nextUrl.origin);
