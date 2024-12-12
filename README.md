@@ -113,3 +113,23 @@ export const GET = handleAuth();
 ##### This will disable client side functionality and switch to server side, for example the login() function which we were previously using in the client side will now be used to initiate the login process in the server side `/api/auth/login`
 
 
+#### Step 4 : Create a `middleware.ts` file in the root folder and import the `authMiddleware()` and add the routes you want to protect in the config.
+
+
+```js
+"use server";
+
+import { authMiddleware } from "./lib/server/authMiddleware";
+import { NextRequest } from "next/server";
+
+export default async function middleware(req: NextRequest) {
+  return authMiddleware(req);
+}
+
+export const config = {
+  matcher: ["/"],
+};
+
+```
+
+
